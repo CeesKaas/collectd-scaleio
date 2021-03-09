@@ -53,7 +53,8 @@ def read_callback(input_data=None):
         sio_2proc_pools = sio_select_pools(sio_all_pools, CONF['pools'])
         sio_parse_metrics(all_pools_metrics, sio_2proc_pools)
         gw_logout(CONF['gateway'], CONF['mdmuser'], session_id)
-    except:
+    except Exception as e:
+        collectd.error('read_callback failed: %s' % e)
         return
 
 # Dispatch values to collectd
@@ -94,7 +95,7 @@ def gw_login(gw_address, login, password):
     if ( session_id.status_code == 401 ):
         my_verbose('Error authenticating to the ScaleIO Gateway. Wrong credential supplied. Check your collectd module configuration. Exiting.')
         raise
-    return session_id.content.replace("\"", "")
+    return session_id.text.replace("\"", "")
 
 # ScaleIO Gateway - Logout Function
 def gw_logout(gw_address, login, session_id):
@@ -263,7 +264,7 @@ def KB_to_Bytes(value):
     return value * 1024 ** 1
 
 def str2bool(v):
-    if type(v) == types.BooleanType:
+    if type(v) == type(True):
         return v
     return v.lower() in ("yes", "true", "t", "1")
 
